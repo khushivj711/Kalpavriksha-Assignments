@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #define FILE_NAME "users.txt"
 
@@ -9,16 +10,22 @@ typedef struct
   int id;
   char name[50];
   int age;
-} user;
+} User;
 
 void addUser();
 void displayUsers();
 void updateUser();
 void deleteUser();
+void displayMenu();
 
 int main()
 {
-  int choice;
+  displayMenu();
+  return 0;
+}
+
+void displayMenu(){
+   int choice;
 
   while (1)
   {
@@ -47,29 +54,29 @@ int main()
     case 4:
       deleteUser();
       break;
-    case 5:
-      exit(0);
     default:
       printf("Invalid Choice!\n");
     }
   }
-
-  return 0;
 }
 
 void addUser()
 {
-  FILE *fp = fopen(FILE_NAME, "a");
-  if (fp == NULL)
+  FILE *file_pointer = fopen(FILE_NAME, "r");
+  
+  User u;
+  int lastId = 0;
+
+  if (file_pointer != NULL)
   {
-    printf("Error opening file!\n");
-    return;
+    while (fscanf(file_pointer, "%d %s %d", &u.id, u.name, &u.age) == 3)
+    {
+        lastId = u.id;
+    }
+    fclose(file_pointer);
   }
-
-  user u;
-
-  printf("Enter ID: ");
-  scanf("%d", &u.id);
+  
+  u.id = lastId + 1;
   getchar();
 
   printf("Enter Name: ");
@@ -79,45 +86,50 @@ void addUser()
   printf("Enter Age: ");
   scanf("%d", &u.age);
 
-  fprintf(fp, "%d %s %d\n", u.id, u.name, u.age);
-  int result = fclose(fp);
-
-  if (result == 0)
+  file_pointer = fopen(FILE_NAME, "a");
+  if (file_pointer == NULL)
   {
-    fp = NULL;
+    printf("Error opening file!\n");
+    return;
+  }
+
+  fprintf(file_pointer, "%d %s %d\n", u.id, u.name, u.age);
+
+  if (fclose(file_pointer) == 0)
+  {
+    file_pointer = NULL;
     printf("User Added Successfully!");
   }
   else
   {
     printf("file cannot be closed!");
-    return;
   }
 }
 
 void displayUsers()
 {
-  FILE *fp = fopen(FILE_NAME, "r");
-  if (fp == NULL)
+  FILE *file_pointer = fopen(FILE_NAME, "r");
+  if (file_pointer == NULL)
   {
     printf("No users found. File not created yet.\n");
     return;
   }
 
-  user u;
+  User u;
 
   printf("\n--- User Records ---\n");
 
-  while (fscanf(fp, "%d %s %d", &u.id, u.name, &u.age) == 3)
+  while (fscanf(file_pointer, "%d %s %d", &u.id, u.name, &u.age) == 3)
   {
     printf("ID: %d , Name: %s , Age: %d\n", u.id, u.name, u.age);
   }
-  fclose(fp);
+  fclose(file_pointer);
 }
 
 void updateUser()
 {
-  FILE *fp = fopen(FILE_NAME, "r");
-  if (fp == NULL)
+  FILE *file_pointer = fopen(FILE_NAME, "r");
+  if (file_pointer == NULL)
   {
     printf("No records to update.\n");
     return;
@@ -127,44 +139,49 @@ void updateUser()
   if (temp == NULL)
   {
     printf("Error creating temp file.\n");
-    fclose(fp);
+    fclose(file_pointer);
     return;
   }
 
-  int id, found = 0;
+  int id;
+  bool isFound = false;
   printf("Enter ID to update: ");
   scanf("%d", &id);
 
-  user u;
-  while (fscanf(fp, "%d %s %d", &u.id, u.name, &u.age) == 3)
+  User u;
+  while (fscanf(file_pointer, "%d %s %d", &u.id, u.name, &u.age) == 3)
   {
     if (u.id == id)
     {
-      found = 1;
+      isFound = true;
       printf("Enter new Name: ");
-      scanf("%s", u.name);
+      fgets(u.name, sizeof(u.name), stdin);
+      u.name[strcspn(u.name, "\n")] = 0;
+
       printf("Enter new Age: ");
       scanf("%d", &u.age);
     }
     fprintf(temp, "%d %s %d\n", u.id, u.name, u.age);
   }
 
-  fclose(fp);
+  fclose(file_pointer);
   fclose(temp);
 
   remove(FILE_NAME);
   rename("temp.txt", FILE_NAME);
 
-  if (found)
+  if (isFound){
     printf("User updated successfully!\n");
-  else
+  }
+  else{
     printf("User with ID %d not found.\n", id);
+  }
 }
 
 void deleteUser()
 {
-  FILE *fp = fopen(FILE_NAME, "r");
-  if (fp == NULL)
+  FILE *file_pointer = fopen(FILE_NAME, "r");
+  if (file_pointer == NULL)
   {
     printf("No records to delete.\n");
     return;
@@ -174,33 +191,36 @@ void deleteUser()
   if (temp == NULL)
   {
     printf("Error creating temp file.\n");
-    fclose(fp);
+    fclose(file_pointer);
     return;
   }
 
-  int id, found = 0;
+  int id;
+  bool isFound = false;
   printf("Enter ID to delete: ");
   scanf("%d", &id);
 
-  user u;
-  while (fscanf(fp, "%d %s %d", &u.id, u.name, &u.age) == 3)
+  User u;
+  while (fscanf(file_pointer, "%d %s %d", &u.id, u.name, &u.age) == 3)
   {
     if (u.id == id)
     {
-      found = 1;
+      isFound = true;
       continue;
     }
     fprintf(temp, "%d %s %d\n", u.id, u.name, u.age);
   }
 
-  fclose(fp);
+  fclose(file_pointer);
   fclose(temp);
 
   remove(FILE_NAME);
   rename("temp.txt", FILE_NAME);
 
-  if (found)
+  if (isFound){
     printf("User deleted successfully!\n");
-  else
+  }
+  else{
     printf("User with ID %d not found.\n", id);
+  }
 }
