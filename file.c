@@ -170,10 +170,12 @@ void updateUser()
   remove(FILE_NAME);
   rename("temp.txt", FILE_NAME);
 
-  if (isFound){
+  if (isFound)
+  {
     printf("User updated successfully!\n");
   }
-  else{
+  else
+  {
     printf("User with ID %d not found.\n", id);
   }
 }
@@ -217,10 +219,12 @@ void deleteUser()
   remove(FILE_NAME);
   rename("temp.txt", FILE_NAME);
 
-  if (isFound){
+  if (isFound)
+  {
     printf("User deleted successfully!\n");
   }
-  else{
+  else
+  {
     printf("User with ID %d not found.\n", id);
   }
 }
