@@ -1,133 +1,156 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <ctype.h>
-#include <string.h>
 
-int solveExpr(const char *expr, int *err);
-int solveTerm(const char **expr, int *err);
-int solveFactor(const char **expr, int *err);
+#define MAX_STACK 1000
 
-void skipSpaces(const char **expr)
-{
-    while (**expr == ' ')
-    {
-        (*expr)++;
-    }
-}
+void pushNumber(int value);
+int popNumber();
+void pushOperator(char operator);
+char popOperator();
+int getPrecedence(char operator);
+int performCalculation(int leftOperand, int rightOperand, char operator);
+void evaluateExpression();
 
-int solveFactor(const char **expr, int *err)
-{
-    skipSpaces(expr);
-
-    if (isdigit(**expr))
-    {
-        int num = 0;
-        while (isdigit(**expr))
-        {
-            num = num * 10 + (**expr - '0');
-            (*expr)++;
-        }
-        return num;
-    }
-    else if (**expr == '(')
-    {
-        (*expr)++;
-        int val = solveExpr(*expr, err);
-        skipSpaces(expr);
-        if (**expr == ')')
-        {
-            (*expr)++;
-        }
-        else
-        {
-            *err = 1;
-        }
-        return val;
-    }
-    else
-    {
-        *err = 1;
-        return 0;
-    }
-}
-
-int solveTerm(const char **expr, int *err)
-{
-    int result = solveFactor(expr, err);
-    skipSpaces(expr);
-
-    while (**expr == '*' || **expr == '/')
-    {
-        char op = **expr;
-        (*expr)++;
-        int right = solveFactor(expr, err);
-
-        if (op == '*')
-        {
-            result *= right;
-        }
-        else
-        {
-            if (right == 0)
-            {
-                *err = 2;
-                return 0;
-            }
-            result /= right;
-        }
-        skipSpaces(expr);
-    }
-    return result;
-}
-
-int solveExpr(const char *expr, int *err)
-{
-    int result = solveTerm(&expr, err);
-    skipSpaces(&expr);
-
-    while (*expr == '+' || *expr == '-')
-    {
-        char op = *expr;
-        expr++;
-        int right = solveTerm(&expr, err);
-
-        if (op == '+')
-            result += right;
-        else
-            result -= right;
-
-        skipSpaces(&expr);
-    }
-    return result;
-}
+int numberStack[MAX_STACK];
+int numberTop = -1;
+char operatorStack[MAX_STACK];
+int operatorTop = -1;
 
 int main()
 {
-    char input[100];
+  printf("Enter expression: ");
+  evaluateExpression();
+  return 0;
+}
 
-    printf("Enter expression: ");
-    if (!fgets(input, sizeof(input), stdin))
-    {
-        printf("Error: Invalid expression.\n");
-        return 0;
-    }
+void pushNumber(int value)
+{
+  numberStack[++numberTop] = value;
+}
 
-    input[strcspn(input, "\n")] = 0;
+int popNumber()
+{
+  return numberStack[numberTop--];
+}
 
-    int err = 0;
-    int ans = solveExpr(input, &err);
+void pushOperator(char operator)
+{
+  operatorStack[++operatorTop] = operator;
+}
 
-    if (err == 1)
+char popOperator()
+{
+  return operatorStack[operatorTop--];
+}
+
+int getPrecedence(char operator)
+{
+  if (operator == '*' || operator == '/')
+  {
+    return 2;
+  }
+  if (operator == '+' || operator == '-')
+  {
+    return 1;
+  }
+  return 0;
+}
+
+int performCalculation(int leftOperand, int rightOperand, char operator)
+{
+  if (operator == '+')
+  {
+    return leftOperand + rightOperand;
+  }
+  if (operator == '-')
+  {
+    return leftOperand - rightOperand;
+  }
+  if (operator == '*')
+  {
+    return leftOperand * rightOperand;
+  }
+  if (operator == '/')
+  {
+    if (rightOperand == 0)
     {
-        printf("Error: Invalid expression.\n");
+      printf("Error: Division by zero.\n");
+      return 0;
     }
-    else if (err == 2)
+    return leftOperand / rightOperand;
+  }
+  printf("Error: Invalid expression.\n");
+  return 0;
+}
+
+void evaluateExpression()
+{
+  char expression[1000];
+  if (!fgets(expression, sizeof(expression), stdin))
+  {
+    return;
+  }
+  int index = 0;
+  while (expression[index])
+  {
+    if (isspace(expression[index]))
     {
-        printf("Error: Division by zero.\n");
+      index++;
+      continue;
     }
-    else
+    if (isdigit(expression[index]))
     {
-        printf("%d\n", ans);
+      int number = 0;
+      while (isdigit(expression[index]))
+      {
+        number = number * 10 + (expression[index] - '0');
+        index++;
+      }
+      pushNumber(number);
+      continue;
     }
-    return 0;
+    if (expression[index] == '+' || expression[index] == '-' ||
+        expression[index] == '*' || expression[index] == '/')
+    {
+      while (operatorTop >= 0 && getPrecedence(operatorStack[operatorTop]) >= getPrecedence(expression[index]))
+      {
+        if (numberTop < 1)
+        {
+          printf("Error: Invalid expression.\n");
+          return;
+        }
+        int rightOperand = popNumber();
+        int leftOperand = popNumber();
+        char operator = popOperator();
+        int result = performCalculation(leftOperand, rightOperand, operator);
+        pushNumber(result);
+      }
+      pushOperator(expression[index]);
+      index++;
+      continue;
+    }
+    printf("Error: Invalid expression.\n");
+    return;
+  }
+  while (operatorTop >= 0)
+  {
+    if (numberTop < 1)
+    {
+      printf("Error: Invalid expression.\n");
+      return;
+    }
+    int rightOperand = popNumber();
+    int leftOperand = popNumber();
+    char operator = popOperator();
+    int result = performCalculation(leftOperand, rightOperand, operator);
+    pushNumber(result);
+  }
+  if (numberTop == 0)
+  {
+    printf("%d\n", numberStack[numberTop]);
+  }
+  else
+  {
+    printf("Error: Invalid expression.\n");
+  }
 }
