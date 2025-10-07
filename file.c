@@ -18,14 +18,18 @@ void updateUser();
 void deleteUser();
 void displayMenu();
 
+bool openFiles(FILE **file_pointer, FILE **temp, const char *action);
+void replaceFiles(FILE *file_pointer, FILE *temp);
+
 int main()
 {
   displayMenu();
   return 0;
 }
 
-void displayMenu(){
-   int choice;
+void displayMenu()
+{
+  int choice;
 
   while (1)
   {
@@ -54,6 +58,9 @@ void displayMenu(){
     case 4:
       deleteUser();
       break;
+    case 5:
+      printf("Exiting...");
+      return;
     default:
       printf("Invalid Choice!\n");
     }
@@ -63,7 +70,7 @@ void displayMenu(){
 void addUser()
 {
   FILE *file_pointer = fopen(FILE_NAME, "r");
-  
+
   User u;
   int lastId = 0;
 
@@ -71,11 +78,11 @@ void addUser()
   {
     while (fscanf(file_pointer, "%d %s %d", &u.id, u.name, &u.age) == 3)
     {
-        lastId = u.id;
+      lastId = u.id;
     }
     fclose(file_pointer);
   }
-  
+
   u.id = lastId + 1;
   getchar();
 
@@ -85,6 +92,7 @@ void addUser()
 
   printf("Enter Age: ");
   scanf("%d", &u.age);
+  getchar();
 
   file_pointer = fopen(FILE_NAME, "a");
   if (file_pointer == NULL)
@@ -126,20 +134,40 @@ void displayUsers()
   fclose(file_pointer);
 }
 
-void updateUser()
+bool openFiles(FILE **file_pointer, FILE **temp, const char *action)
 {
-  FILE *file_pointer = fopen(FILE_NAME, "r");
-  if (file_pointer == NULL)
+  *file_pointer = fopen(FILE_NAME, "r");
+  if (*file_pointer == NULL)
   {
-    printf("No records to update.\n");
-    return;
+    printf("No records to %s.\n", action);
+    return false;
   }
 
-  FILE *temp = fopen("temp.txt", "w");
-  if (temp == NULL)
+  *temp = fopen("temp.txt", "w");
+  if (*temp == NULL)
   {
     printf("Error creating temp file.\n");
-    fclose(file_pointer);
+    fclose(*file_pointer);
+    return false;
+  }
+
+  return true;
+}
+
+void replaceFiles(FILE *file_pointer, FILE *temp)
+{
+  fclose(file_pointer);
+  fclose(temp);
+  remove(FILE_NAME);
+  rename("temp.txt", FILE_NAME);
+}
+
+void updateUser()
+{
+  FILE *file_pointer, *temp;
+
+  if (!openFiles(&file_pointer, &temp, "update"))
+  {
     return;
   }
 
@@ -147,6 +175,7 @@ void updateUser()
   bool isFound = false;
   printf("Enter ID to update: ");
   scanf("%d", &id);
+  getchar();
 
   User u;
   while (fscanf(file_pointer, "%d %s %d", &u.id, u.name, &u.age) == 3)
@@ -164,11 +193,7 @@ void updateUser()
     fprintf(temp, "%d %s %d\n", u.id, u.name, u.age);
   }
 
-  fclose(file_pointer);
-  fclose(temp);
-
-  remove(FILE_NAME);
-  rename("temp.txt", FILE_NAME);
+  replaceFiles(file_pointer, temp);
 
   if (isFound)
   {
@@ -182,18 +207,9 @@ void updateUser()
 
 void deleteUser()
 {
-  FILE *file_pointer = fopen(FILE_NAME, "r");
-  if (file_pointer == NULL)
+  FILE *file_pointer, *temp;
+  if (!openFiles(&file_pointer, &temp, "delete"))
   {
-    printf("No records to delete.\n");
-    return;
-  }
-
-  FILE *temp = fopen("temp.txt", "w");
-  if (temp == NULL)
-  {
-    printf("Error creating temp file.\n");
-    fclose(file_pointer);
     return;
   }
 
@@ -201,6 +217,7 @@ void deleteUser()
   bool isFound = false;
   printf("Enter ID to delete: ");
   scanf("%d", &id);
+  getchar();
 
   User u;
   while (fscanf(file_pointer, "%d %s %d", &u.id, u.name, &u.age) == 3)
@@ -213,11 +230,7 @@ void deleteUser()
     fprintf(temp, "%d %s %d\n", u.id, u.name, u.age);
   }
 
-  fclose(file_pointer);
-  fclose(temp);
-
-  remove(FILE_NAME);
-  rename("temp.txt", FILE_NAME);
+  replaceFiles(file_pointer, temp);
 
   if (isFound)
   {
