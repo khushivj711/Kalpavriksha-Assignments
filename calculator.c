@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <ctype.h>
+#include <stdbool.h>
 
 #define MAX_STACK 1000
 
@@ -10,6 +11,7 @@ char popOperator();
 int getPrecedence(char operator);
 int performCalculation(int leftOperand, int rightOperand, char operator);
 void evaluateExpression();
+bool isOperator(char ch);
 
 int numberStack[MAX_STACK];
 int numberTop = -1;
@@ -83,6 +85,11 @@ int performCalculation(int leftOperand, int rightOperand, char operator)
   return 0;
 }
 
+bool isOperator(char ch)
+{
+  return (ch == '+' || ch == '-' || ch == '*' || ch == '/');
+}
+
 void evaluateExpression()
 {
   char expression[1000];
@@ -109,8 +116,7 @@ void evaluateExpression()
       pushNumber(number);
       continue;
     }
-    if (expression[index] == '+' || expression[index] == '-' ||
-        expression[index] == '*' || expression[index] == '/')
+    if (isOperator(expression[index]))
     {
       while (operatorTop >= 0 && getPrecedence(operatorStack[operatorTop]) >= getPrecedence(expression[index]))
       {
