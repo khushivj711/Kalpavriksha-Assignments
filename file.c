@@ -18,7 +18,7 @@ void updateUser();
 void deleteUser();
 void displayMenu();
 
-bool openFiles(FILE **file_pointer, FILE **temp, const char *action);
+bool canOpenFiles(FILE **file_pointer, FILE **temp, const char *action);
 void replaceFiles(FILE *file_pointer, FILE *temp);
 
 int main()
@@ -69,18 +69,18 @@ void displayMenu()
 
 void addUser()
 {
-  FILE *file_pointer = fopen(FILE_NAME, "r");
+  FILE *filePointer = fopen(FILE_NAME, "r");
 
   User u;
   int lastId = 0;
 
-  if (file_pointer != NULL)
+  if (filePointer != NULL)
   {
-    while (fscanf(file_pointer, "%d %s %d", &u.id, u.name, &u.age) == 3)
+    while (fscanf(filePointer, "%d %s %d", &u.id, u.name, &u.age) == 3)
     {
       lastId = u.id;
     }
-    fclose(file_pointer);
+    fclose(filePointer);
   }
 
   u.id = lastId + 1;
@@ -94,18 +94,18 @@ void addUser()
   scanf("%d", &u.age);
   getchar();
 
-  file_pointer = fopen(FILE_NAME, "a");
-  if (file_pointer == NULL)
+  filePointer = fopen(FILE_NAME, "a");
+  if (filePointer == NULL)
   {
     printf("Error opening file!\n");
     return;
   }
 
-  fprintf(file_pointer, "%d %s %d\n", u.id, u.name, u.age);
+  fprintf(filePointer, "%d %s %d\n", u.id, u.name, u.age);
 
-  if (fclose(file_pointer) == 0)
+  if (fclose(filePointer) == 0)
   {
-    file_pointer = NULL;
+    filePointer = NULL;
     printf("User Added Successfully!");
   }
   else
@@ -116,8 +116,8 @@ void addUser()
 
 void displayUsers()
 {
-  FILE *file_pointer = fopen(FILE_NAME, "r");
-  if (file_pointer == NULL)
+  FILE *filePointer = fopen(FILE_NAME, "r");
+  if (filePointer == NULL)
   {
     printf("No users found. File not created yet.\n");
     return;
@@ -127,17 +127,17 @@ void displayUsers()
 
   printf("\n--- User Records ---\n");
 
-  while (fscanf(file_pointer, "%d %s %d", &u.id, u.name, &u.age) == 3)
+  while (fscanf(filePointer, "%d %s %d", &u.id, u.name, &u.age) == 3)
   {
     printf("ID: %d , Name: %s , Age: %d\n", u.id, u.name, u.age);
   }
-  fclose(file_pointer);
+  fclose(filePointer);
 }
 
-bool openFiles(FILE **file_pointer, FILE **temp, const char *action)
+bool canOpenFiles(FILE **filePointer, FILE **temp, const char *action)
 {
-  *file_pointer = fopen(FILE_NAME, "r");
-  if (*file_pointer == NULL)
+  *filePointer = fopen(FILE_NAME, "r");
+  if (*filePointer == NULL)
   {
     printf("No records to %s.\n", action);
     return false;
@@ -147,16 +147,16 @@ bool openFiles(FILE **file_pointer, FILE **temp, const char *action)
   if (*temp == NULL)
   {
     printf("Error creating temp file.\n");
-    fclose(*file_pointer);
+    fclose(*filePointer);
     return false;
   }
 
   return true;
 }
 
-void replaceFiles(FILE *file_pointer, FILE *temp)
+void replaceFiles(FILE *filePointer, FILE *temp)
 {
-  fclose(file_pointer);
+  fclose(filePointer);
   fclose(temp);
   remove(FILE_NAME);
   rename("temp.txt", FILE_NAME);
@@ -164,9 +164,9 @@ void replaceFiles(FILE *file_pointer, FILE *temp)
 
 void updateUser()
 {
-  FILE *file_pointer, *temp;
+  FILE *filePointer, *temp;
 
-  if (!openFiles(&file_pointer, &temp, "update"))
+  if (!canOpenFiles(&filePointer, &temp, "update"))
   {
     return;
   }
@@ -178,7 +178,7 @@ void updateUser()
   getchar();
 
   User u;
-  while (fscanf(file_pointer, "%d %s %d", &u.id, u.name, &u.age) == 3)
+  while (fscanf(filePointer, "%d %s %d", &u.id, u.name, &u.age) == 3)
   {
     if (u.id == id)
     {
@@ -193,7 +193,7 @@ void updateUser()
     fprintf(temp, "%d %s %d\n", u.id, u.name, u.age);
   }
 
-  replaceFiles(file_pointer, temp);
+  replaceFiles(filePointer, temp);
 
   if (isFound)
   {
@@ -207,8 +207,8 @@ void updateUser()
 
 void deleteUser()
 {
-  FILE *file_pointer, *temp;
-  if (!openFiles(&file_pointer, &temp, "delete"))
+  FILE *filePointer, *temp;
+  if (!canOpenFiles(&filePointer, &temp, "delete"))
   {
     return;
   }
@@ -220,7 +220,7 @@ void deleteUser()
   getchar();
 
   User u;
-  while (fscanf(file_pointer, "%d %s %d", &u.id, u.name, &u.age) == 3)
+  while (fscanf(filePointer, "%d %s %d", &u.id, u.name, &u.age) == 3)
   {
     if (u.id == id)
     {
@@ -230,7 +230,7 @@ void deleteUser()
     fprintf(temp, "%d %s %d\n", u.id, u.name, u.age);
   }
 
-  replaceFiles(file_pointer, temp);
+  replaceFiles(filePointer, temp);
 
   if (isFound)
   {
