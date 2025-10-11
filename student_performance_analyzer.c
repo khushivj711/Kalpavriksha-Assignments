@@ -1,18 +1,18 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-#define PASS_MARKS 35
-#define NUM_SUBJECTS 3
+const int PASS_MARKS = 35;
+const int NUM_SUBJECTS = 3;
 
-#define GRADE_A_THRESHOLD 85
-#define GRADE_B_THRESHOLD 70
-#define GRADE_C_THRESHOLD 50
+const int GRADE_A_THRESHOLD = 85;
+const int GRADE_B_THRESHOLD = 70;
+const int GRADE_C_THRESHOLD = 50;
 
-#define STARS_GRADE_A 5
-#define STARS_GRADE_B 4
-#define STARS_GRADE_C 3
-#define STARS_GRADE_D 2
-#define STARS_GRADE_F 0
+const int STARS_GRADE_A = 5;
+const int STARS_GRADE_B = 4;
+const int STARS_GRADE_C = 3;
+const int STARS_GRADE_D = 2;
+const int STARS_GRADE_F = 0;
 
 typedef enum
 {
@@ -218,3 +218,4 @@ void printRollNumbersRecursively(StudentDetails students[], int index, int total
   printf("%d ", students[index].rollNo);
   printRollNumbersRecursively(students, index + 1, totalStudents);
 }
+
