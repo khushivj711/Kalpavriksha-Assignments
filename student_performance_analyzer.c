@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+#define MAX_STUDENTS 100
+#define NUM_SUBJECTS 3
+
 const int PASS_MARKS = 35;
-const int NUM_SUBJECTS = 3;
 
 const int GRADE_A_THRESHOLD = 85;
 const int GRADE_B_THRESHOLD = 70;
@@ -39,7 +41,8 @@ void printRollNumbersRecursively(StudentDetails students[], int index, int total
 bool isValidStudentCount(int studentCount);
 bool isValidMarks(float marks[]);
 void displayStudentPerformance(StudentDetails student);
-void sortStudentsByRoll(StudentDetails students[], int n);
+void sortStudentsByRoll(StudentDetails students[], int noOfStudents);
+void displayAllStudentsPerformance(StudentDetails students[], int totalStudents);
 
 int main()
 {
@@ -60,7 +63,7 @@ void processStudentPerformance()
     return;
   }
 
-  StudentDetails students[noOfStudents];
+  StudentDetails students[MAX_STUDENTS];
 
   for (int i = 0; i < noOfStudents; i++)
   {
@@ -77,15 +80,20 @@ void processStudentPerformance()
 
   printf("\n");
 
-  for (int i = 0; i < noOfStudents; i++)
-  {
-    displayStudentPerformance(students[i]);
-  }
+  displayAllStudentsPerformance(students, noOfStudents);
 
   int startIndex = 0;
   printf("List of Roll Numbers (via recursion): ");
   printRollNumbersRecursively(students, startIndex, noOfStudents);
   printf("\n");
+}
+
+void displayAllStudentsPerformance(StudentDetails students[], int totalStudents)
+{
+  for (int i = 0; i < totalStudents; i++)
+  {
+    displayStudentPerformance(students[i]);
+  }
 }
 
 void displayStudentPerformance(StudentDetails student)
@@ -218,4 +226,3 @@ void printRollNumbersRecursively(StudentDetails students[], int index, int total
   printf("%d ", students[index].rollNo);
   printRollNumbersRecursively(students, index + 1, totalStudents);
 }
-
