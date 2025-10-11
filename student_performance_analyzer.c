@@ -39,6 +39,7 @@ void printRollNumbersRecursively(StudentDetails students[], int index, int total
 bool isValidStudentCount(int studentCount);
 bool isValidMarks(float marks[]);
 void displayStudentPerformance(StudentDetails student);
+void sortStudentsByRoll(StudentDetails students[], int n);
 
 int main()
 {
@@ -72,6 +73,8 @@ void processStudentPerformance()
     }
   }
 
+  sortStudentsByRoll(students, noOfStudents);
+
   printf("\n");
 
   for (int i = 0; i < noOfStudents; i++)
@@ -104,6 +107,22 @@ void displayStudentPerformance(StudentDetails student)
   }
 
   printf("\n\n");
+}
+
+void sortStudentsByRoll(StudentDetails students[], int noOfStudents)
+{
+  for (int i = 0; i < noOfStudents - 1; i++)
+  {
+    for (int j = i + 1; j < noOfStudents; j++)
+    {
+      if (students[i].rollNo > students[j].rollNo)
+      {
+        StudentDetails temp = students[i];
+        students[i] = students[j];
+        students[j] = temp;
+      }
+    }
+  }
 }
 
 bool isValidStudentCount(int studentCount)
