@@ -43,6 +43,7 @@ bool isValidMarks(float marks[]);
 void displayStudentPerformance(StudentDetails student);
 void sortStudentsByRoll(StudentDetails students[], int noOfStudents);
 void displayAllStudentsPerformance(StudentDetails students[], int totalStudents);
+bool isDuplicateRoll(StudentDetails students[], int currentIndex);
 
 int main()
 {
@@ -69,10 +70,17 @@ void processStudentPerformance()
   {
     scanf("%d %s %f %f %f", &students[i].rollNo, students[i].name, &students[i].subjectMarks[0], &students[i].subjectMarks[1], &students[i].subjectMarks[2]);
 
+    if (isDuplicateRoll(students, i))
+    {
+      printf("Duplicate roll number %d! Please enter again.\n", students[i].rollNo);
+      i--;
+      continue;
+    }
+
     if (!isValidMarks(students[i].subjectMarks))
     {
       printf("Invalid marks! Please enter values between 0 and 100.\n");
-      return;
+      continue;
     }
   }
 
@@ -131,6 +139,18 @@ void sortStudentsByRoll(StudentDetails students[], int noOfStudents)
       }
     }
   }
+}
+
+bool isDuplicateRoll(StudentDetails students[], int currentIndex)
+{
+  for (int i = 0; i < currentIndex; i++)
+  {
+    if (students[i].rollNo == students[currentIndex].rollNo)
+    {
+      return true;
+    }
+  }
+  return false;
 }
 
 bool isValidStudentCount(int studentCount)
