@@ -57,7 +57,7 @@ int getValidMatrixSize()
     printf("Enter side of sonar image matrix: ");
     scanf("%d", &matrixSize);
 
-    if (!isValidMatrixSize(matrixSize))
+    if (isValidMatrixSize(matrixSize))
     {
       return matrixSize;
     }
@@ -68,7 +68,7 @@ int getValidMatrixSize()
 
 bool isValidMatrixSize(int matrixSize)
 {
-  return (matrixSize < 2 || matrixSize > 10);
+  return (matrixSize >= 2 && matrixSize <= 10);
 }
 
 void generateSonarImage(int* sonarImage, int matrixSize)
@@ -175,4 +175,5 @@ void decodeMatrix(int* sonarImage, int matrixSize)
       *(sonarImage + row * matrixSize + col) /= MAX_PIXEL_VALUE;
     }
   }
+
 }
