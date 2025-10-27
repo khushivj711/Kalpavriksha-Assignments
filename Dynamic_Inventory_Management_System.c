@@ -65,17 +65,17 @@ bool isValidNumberOfProducts(int numberOfProducts)
 
 bool isValidProductID(int id)
 {
-  return id >= MIN_PRODUCT_ID && id <= MAX_PRODUCT_ID;
+  return (id >= MIN_PRODUCT_ID && id <= MAX_PRODUCT_ID);
 }
 
 bool isValidPrice(float price)
 {
-  return price >= MIN_PRICE && price <= MAX_PRICE;
+  return (price >= MIN_PRICE && price <= MAX_PRICE);
 }
 
 bool isValidQuantity(int quantity)
 {
-  return quantity >= MIN_QUANTITY && quantity <= MAX_QUANTITY;
+  return (quantity >= MIN_QUANTITY && quantity <= MAX_QUANTITY);
 }
 
 bool isListEmpty(ProductDetails *productDetails, int numberOfProducts)
@@ -449,3 +449,4 @@ void processInventory(ProductDetails **productDetails, int *numberOfProducts)
     }
   } while (choice != 8);
 }
+
