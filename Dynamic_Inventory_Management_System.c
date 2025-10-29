@@ -26,11 +26,13 @@ bool isValidProductID(int id);
 bool isValidPrice(float price);
 bool isValidQuantity(int quantity);
 bool isListEmpty(ProductDetails *productDetails, int numberOfProducts);
-void getValidNumberOfProducts(int *numberOfProducts);
-void getDetailsOfProducts(ProductDetails *productDetails, int numberOfProducts);
+bool isDuplicateProductID(ProductDetails *productDetails, int numberOfProducts, int id);
+bool isProductNameContains(const char *productName, const char *searchName);
+void inputValidNumberOfProducts(int *numberOfProducts);
+void displayDetailsOfProducts(ProductDetails *productDetails, int numberOfProducts);
 void inventoryMenu();
 void sortByProductID(ProductDetails *productDetails, int numberOfProducts);
-void viewAllPoducts(ProductDetails *productDetails, int numberOfProducts);
+void viewAllProducts(ProductDetails *productDetails, int numberOfProducts);
 ProductDetails *addNewProduct(ProductDetails *productDetails, int *numberOfProducts);
 void updateQuantityOfProduct(ProductDetails *productDetails, int numberOfProducts);
 void searchProductByID(ProductDetails *productDetails, int numberOfProducts);
@@ -42,7 +44,7 @@ void processInventory(ProductDetails **productDetails, int *numberOfProducts);
 int main()
 {
   int numberOfProducts;
-  getValidNumberOfProducts(&numberOfProducts);
+  inputValidNumberOfProducts(&numberOfProducts);
   ProductDetails *productDetails = (ProductDetails *)calloc(numberOfProducts, sizeof(ProductDetails));
   if (productDetails == NULL)
   {
@@ -50,7 +52,7 @@ int main()
     return 1;
   }
 
-  getDetailsOfProducts(productDetails, numberOfProducts);
+  displayDetailsOfProducts(productDetails, numberOfProducts);
   processInventory(&productDetails, &numberOfProducts);
   free(productDetails);
   productDetails = NULL;
@@ -65,17 +67,17 @@ bool isValidNumberOfProducts(int numberOfProducts)
 
 bool isValidProductID(int id)
 {
-  return (id >= MIN_PRODUCT_ID && id <= MAX_PRODUCT_ID);
+  return id >= MIN_PRODUCT_ID && id <= MAX_PRODUCT_ID;
 }
 
 bool isValidPrice(float price)
 {
-  return (price >= MIN_PRICE && price <= MAX_PRICE);
+  return price >= MIN_PRICE && price <= MAX_PRICE;
 }
 
 bool isValidQuantity(int quantity)
 {
-  return (quantity >= MIN_QUANTITY && quantity <= MAX_QUANTITY);
+  return quantity >= MIN_QUANTITY && quantity <= MAX_QUANTITY;
 }
 
 bool isListEmpty(ProductDetails *productDetails, int numberOfProducts)
@@ -88,7 +90,47 @@ bool isListEmpty(ProductDetails *productDetails, int numberOfProducts)
   return false;
 }
 
-void getValidNumberOfProducts(int *numberOfProducts)
+bool isDuplicateProductID(ProductDetails *productDetails, int numberOfProducts, int id)
+{
+  for (int i = 0; i < numberOfProducts; i++)
+  {
+    if((productDetails + i)->productId == id)
+    {
+      return true;
+    }
+  }
+  return false;  
+}
+
+bool isProductNameContains(const char *productName, const char *searchName)
+{
+  int lenMain = strlen(productName);
+  int lenSub = strlen(searchName);
+
+  if(lenSub == 0 || lenSub > lenMain)
+  {
+    return false;
+  }
+
+  for (int i = 0; i <= lenMain-lenSub; i++)
+  {
+    int j ;
+    for (j = 0; j < lenSub; j++)
+    {
+      if(productName[i+j] != searchName[j])
+      {
+        break;
+      }
+    }
+    if(j == lenSub)
+    {
+      return true;
+    }
+  }
+  return false;
+}
+
+void inputValidNumberOfProducts(int *numberOfProducts)
 {
   do
   {
@@ -98,10 +140,13 @@ void getValidNumberOfProducts(int *numberOfProducts)
     {
       printf("Invalid input! Please enter values between 1 and 100.\n");
     }
+    else{
+      break;
+    }
   } while (!isValidNumberOfProducts(*numberOfProducts));
 }
 
-void getDetailsOfProducts(ProductDetails *productDetails, int numberOfProducts)
+void displayDetailsOfProducts(ProductDetails *productDetails, int numberOfProducts)
 {
   for (int i = 0; i < numberOfProducts; i++)
   {
@@ -171,7 +216,7 @@ void sortByProductID(ProductDetails *productDetails, int numberOfProducts)
   }
 }
 
-void viewAllPoducts(ProductDetails *productDetails, int numberOfProducts)
+void viewAllProducts(ProductDetails *productDetails, int numberOfProducts)
 {
   if (isListEmpty(productDetails, numberOfProducts))
   {
@@ -205,7 +250,7 @@ ProductDetails *addNewProduct(ProductDetails *productDetails, int *numberOfProdu
   scanf("%d", &newProductDetail[*numberOfProducts - 1].productId);
   getchar();
 
-  if (!isValidProductID(newProductDetail[*numberOfProducts - 1].productId))
+  if (!isValidProductID(newProductDetail[*numberOfProducts - 1].productId) || isDuplicateProductID(newProductDetail, *numberOfProducts - 1 , newProductDetail[*numberOfProducts - 1].productId))
   {
     printf("Invalid Product ID! It must be between 1 and 10000.\n");
     return productDetails;
@@ -286,22 +331,22 @@ void searchProductByID(ProductDetails *productDetails, int numberOfProducts)
     return;
   }
 
-  int searchId;
+  int productId;
   printf("Enter Product ID to search: ");
-  scanf("%d", &searchId);
+  scanf("%d", &productId);
 
   sortByProductID(productDetails, numberOfProducts);
 
   for (int i = 0; i < numberOfProducts; i++)
   {
-    if ((productDetails + i)->productId == searchId)
+    if ((productDetails + i)->productId == productId)
     {
       printf("\nProduct Found:\n");
       printf("Product ID: %d | Name: %s | Price: %.2f | Quantity: %d\n", (productDetails + i)->productId, (productDetails + i)->productName, (productDetails + i)->productPrice, (productDetails + i)->productQuality);
       return;
     }
   }
-  printf("Product with ID %d not found.\n", searchId);
+  printf("Product with ID %d not found.\n", productId);
 }
 
 void searchProductByName(ProductDetails *productDetails, int numberOfProducts)
@@ -322,7 +367,7 @@ void searchProductByName(ProductDetails *productDetails, int numberOfProducts)
 
   for (int i = 0; i < numberOfProducts; i++)
   {
-    if (strstr((productDetails + i)->productName, searchName) != NULL)
+    if (isProductNameContains((productDetails + i)->productName, searchName))
     {
       printf("Product ID: %d | Name: %s | Price: %.2f | Quantity: %d\n", (productDetails + i)->productId, (productDetails + i)->productName, (productDetails + i)->productPrice, (productDetails + i)->productQuality);
       found = 1;
@@ -347,6 +392,13 @@ void searchProductByPriceRange(ProductDetails *productDetails, int numberOfProdu
   scanf("%f", &minPrice);
   printf("Enter maximum price: ");
   scanf("%f", &maxPrice);
+
+  if (minPrice > maxPrice)
+  {
+    float temp = minPrice;
+    minPrice = maxPrice;
+    maxPrice = temp;
+  }
 
   int found = 0;
   printf("Products in price range:\n");
@@ -424,7 +476,7 @@ void processInventory(ProductDetails **productDetails, int *numberOfProducts)
       *productDetails = addNewProduct(*productDetails, numberOfProducts);
       break;
     case 2:
-      viewAllPoducts(*productDetails, *numberOfProducts);
+      viewAllProducts(*productDetails, *numberOfProducts);
       break;
     case 3:
       updateQuantityOfProduct(*productDetails, *numberOfProducts);
@@ -449,4 +501,3 @@ void processInventory(ProductDetails **productDetails, int *numberOfProducts)
     }
   } while (choice != 8);
 }
-
