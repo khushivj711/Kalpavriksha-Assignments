@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define HASH_SIZE 1009
+#define HASH_MAP_SIZE 1009
 
 typedef struct Node {
     int key;
@@ -12,11 +12,11 @@ typedef struct Node {
     struct Node* next;
 } Node;
 
-typedef struct HashNode {
+typedef struct HashMapNode {
     int key;
     Node* node;
-    struct HashNode* next;
-} HashNode;
+    struct HashMapNode* next;
+} HashMapNode;
 
 typedef struct LRUCache {
     int capacity;
@@ -25,11 +25,11 @@ typedef struct LRUCache {
     Node* head;
     Node* tail;
 
-    HashNode* hashMap[HASH_SIZE];
+    HashMapNode* hashMap[HASH_MAP_SIZE];
 } LRUCache;
 
-int hashFunction(int key) {
-    return key % HASH_SIZE;
+int hash(int key) {
+    return key % HASH_MAP_SIZE;
 }
 
 LRUCache* createCache(int capacity) {
@@ -45,7 +45,7 @@ LRUCache* createCache(int capacity) {
     cache->head = NULL;
     cache->tail = NULL;
 
-    for(int index = 0; index < HASH_SIZE; index++) {
+    for(int index = 0; index < HASH_MAP_SIZE; index++) {
         cache->hashMap[index] = NULL;
     }
 
@@ -53,8 +53,8 @@ LRUCache* createCache(int capacity) {
 }
 
 void hashPut(LRUCache* cache, int key, Node* node) {
-    int hashIndex = hashFunction(key);
-    HashNode* bucket = cache->hashMap[hashIndex];
+    int hashIndex = hash(key);
+    HashMapNode* bucket = cache->hashMap[hashIndex];
 
     while(bucket != NULL) {
         if(bucket->key == key) {
@@ -64,7 +64,7 @@ void hashPut(LRUCache* cache, int key, Node* node) {
         bucket = bucket->next;
     }
 
-    HashNode* newNode = (HashNode*)malloc(sizeof(HashNode));
+    HashMapNode* newNode = (HashMapNode*)malloc(sizeof(HashMapNode));
     newNode->key = key;
     newNode->node = node;
     newNode->next = cache->hashMap[hashIndex];
@@ -72,8 +72,8 @@ void hashPut(LRUCache* cache, int key, Node* node) {
 }
 
 Node* hashGet(LRUCache* cache, int key) {
-    int hashIndex = hashFunction(key);
-    HashNode* bucket = cache->hashMap[hashIndex];
+    int hashIndex = hash(key);
+    HashMapNode* bucket = cache->hashMap[hashIndex];
 
     while(bucket != NULL) {
         if(bucket->key == key) {
@@ -84,10 +84,10 @@ Node* hashGet(LRUCache* cache, int key) {
     return NULL;
 }
 
-void hashRemove(LRUCache* cache, int key) {
-    int hashIndex = hashFunction(key);
-    HashNode* bucket = cache->hashMap[hashIndex];
-    HashNode* prev = NULL;
+void remove(LRUCache* cache, int key) {
+    int hashIndex = hash(key);
+    HashMapNode* bucket = cache->hashMap[hashIndex];
+    HashMapNode* prev = NULL;
 
     while(bucket != NULL) {
         if(bucket->key == key) {
@@ -137,7 +137,7 @@ void removeLRU(LRUCache* cache) {
     }
 
     Node* removeNode = cache->tail;
-    hashRemove(cache, removeNode->key);
+    remove(cache, removeNode->key);
 
     if(removeNode->prev) {
         removeNode->prev->next = NULL;
@@ -216,11 +216,11 @@ void freeCache(LRUCache* cache) {
         current = next;
     }
 
-    for(int index = 0; index < HASH_SIZE; index++) {
-        HashNode* bucket = cache->hashMap[index];
+    for(int index = 0; index < HASH_MAP_SIZE; index++) {
+        HashMapNode* bucket = cache->hashMap[index];
 
         while(bucket) {
-            HashNode* next = bucket->next;
+            HashMapNode* next = bucket->next;
             free(bucket);
             bucket = next;
         }
