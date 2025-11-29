@@ -6,7 +6,7 @@
 #define TotalTeams 10
 #define TotalPlayers 200
 
-typedef struct MyPlayer {
+typedef struct Player {
     int id;
     const char *name;
     const char *team;
@@ -17,19 +17,19 @@ typedef struct MyPlayer {
     int wickets;
     float economyRate;
     float performanceIndex;
-    struct MyPlayer* next;
-} MyPlayer;
+    struct Player* next;
+} Player;
 
 typedef struct {
     int id;
     const char* name;
     int totalPlayers;
     float averageBattingStrikeRate;
-    MyPlayer* playerHead;
+    Player* playerHead;
 } MyTeams;
 
 typedef struct {
-    MyPlayer* player;
+    Player* player;
     int teamIndex;
 } HeapNode;
 
@@ -47,8 +47,8 @@ void displayTopKPlayersOfASpecificTeamByRole();
 void displayAllPlayersOfAllTeams();
 void exitPerformanceAnalyzer();
 
-int partition(MyPlayer* players[], int low, int high);
-void quickSort(MyPlayer* players[], int low, int high, int numberOfPlayers);
+int partition(Player* players[], int low, int high);
+void quickSort(Player* players[], int low, int high, int numberOfPlayers);
 
 void swapHeap(HeapNode* first, HeapNode* second);
 void heapify(HeapNode heap[], int size, int index);
@@ -72,7 +72,7 @@ void initializeData() {
     for(int index = 0; index < TotalPlayers; index++) {
         Player playerData = players[index];
 
-        MyPlayer* p = (MyPlayer*)malloc(sizeof(MyPlayer));
+        Player* p = (Player*)malloc(sizeof(Player));
         p->id = playerData.id;
         p->name = playerData.name;
         p->team = playerData.team;
@@ -151,7 +151,7 @@ void updateTeamAverageStrikeRate(MyTeams* team) {
     float totalStrikeRate = 0.0;
     int count = 0; 
 
-    MyPlayer* temp = team->playerHead;
+    Player* temp = team->playerHead;
 
     while(temp != NULL) {
         if(strcmp(temp->role, "Batsman") == 0 || strcmp(temp->role, "All-Rounder") == 0) {
@@ -200,7 +200,7 @@ void addPlayerToTeam() {
 
     MyTeams* selectedTeam = &team[index];
 
-    MyPlayer *newPlayer = (MyPlayer *)malloc(sizeof(MyPlayer));
+    Player *newPlayer = (Player *)malloc(sizeof(Player));
     if(!newPlayer) {
         printf("Memory allocation failed\n");
         return;
@@ -288,7 +288,7 @@ void displayPlayersOfSpecificTeam() {
     }
 
     MyTeams selectedTeam = team[index];
-    MyPlayer* current = selectedTeam.playerHead;
+    Player* current = selectedTeam.playerHead;
 
     printf("Players of Team %s:\n", selectedTeam.name);
 
@@ -301,11 +301,11 @@ void displayPlayersOfSpecificTeam() {
         return;
     }
 
-    float totalStrikeRate = 0.0;
-    int countForAvg = 0;
-
     while(current != NULL) {
-        printf("%-5d %-20s %-15s %-8d %-8.2f %-8.2f %-8d %-8.2f %-12.2f\n", current->id, current->name, current->role, current->totalRuns, current->battingAverage, current->strikeRate, current->wickets, current->economyRate, current->performanceIndex);
+        printf("%-5d %-20s %-15s %-8d %-8.2f %-8.2f %-8d %-8.2f %-12.2f\n", 
+               current->id, current->name, current->role, current->totalRuns, 
+               current->battingAverage, current->strikeRate, current->wickets, 
+               current->economyRate, current->performanceIndex);
 
         current = current->next;
     }
@@ -349,27 +349,27 @@ void displayTeamsByAverageBattingStrikeRate() {
     printf("===============================================================\n");
 }
 
-int partition(MyPlayer* players[], int low, int high) {
+int partition(Player* players[], int low, int high) {
     float pivot = players[high]->performanceIndex;
     int index = low - 1;
 
     for(int iterator = low; iterator < high; iterator++) {
         if(players[iterator]->performanceIndex > pivot) {
             index++;
-            MyPlayer* temp = players[index];
+            Player* temp = players[index];
             players[index] = players[iterator];
             players[iterator] = temp;
         }
     }
 
-    MyPlayer* temp = players[index + 1];
+    Player* temp = players[index + 1];
     players[index + 1] = players[high];
     players[high] = temp;
 
     return index + 1;
 }
 
-void quickSort(MyPlayer* players[], int low, int high, int numberOfPlayers) {
+void quickSort(Player* players[], int low, int high, int numberOfPlayers) {
     if(low < high) {
         int pivotIndex = partition(players, low, high);
         int leftCount = pivotIndex - low + 1;
@@ -412,9 +412,9 @@ void displayTopKPlayersOfASpecificTeamByRole() {
     scanf("%d", &numberOfPlayers);
 
     MyTeams selectedTeam = team[teamId - 1];
-    MyPlayer *current = selectedTeam.playerHead;
+    Player *current = selectedTeam.playerHead;
 
-    MyPlayer* rolePlayers[200];
+    Player* rolePlayers[200];
     int count = 0;
 
     while(current != NULL) {
@@ -438,12 +438,15 @@ void displayTopKPlayersOfASpecificTeamByRole() {
     printf("Top %d %s of Team %s\n", numberOfPlayers, role, selectedTeam.name);
 
     printf("=======================================================================================================\n");
-    printf("%-5s %-20s %-15s %-8s %-8s %-8s %-8s %-8s %-12s\n", "ID", "Name", "Role", "Runs", "Avg", "SR", "Wkts", "ER", "Perf.Index");
+    printf("%-5s %-20s %-15s %-8s %-8s %-8s %-8s %-8s %-12s\n", 
+           "ID", "Name", "Role", "Runs", "Avg", "SR", "Wkts", "ER", "Perf.Index");
     printf("=======================================================================================================\n");
 
     for(int index = 0; index < count && index < numberOfPlayers; index++) {
-        MyPlayer* player = rolePlayers[index];
-        printf("%-5d %-20s %-15s %-8d %-8.2f %-8.2f %-8d %-8.2f %-12.2f\n", player->id, player->name, player->role, player->totalRuns, player->battingAverage, player->strikeRate, player->wickets, player->economyRate, player->performanceIndex);
+        Player* player = rolePlayers[index];
+        printf("%-5d %-20s %-15s %-8d %-8.2f %-8.2f %-8d %-8.2f %-12.2f\n", 
+               player->id, player->name, player->role, player->totalRuns, player->battingAverage, 
+               player->strikeRate, player->wickets, player->economyRate, player->performanceIndex);
     }
 
     printf("=======================================================================================================\n");
@@ -491,32 +494,32 @@ void displayAllPlayersOfAllTeams() {
         return;
     }
 
-    MyPlayer* rolePlayers[TotalTeams];
+    Player* rolePlayers[TotalTeams];
     
     for(int index = 0; index < TotalTeams; index++) {
-        MyPlayer* current = team[index].playerHead;
-        MyPlayer* filtered = NULL;
+        Player* current = team[index].playerHead;
+        Player* filtered = NULL;
 
         while(current != NULL) {
             if(strcmp(current->role, role) == 0) {
-                MyPlayer* node = current;
+                Player* node = current;
                 node->next = filtered;
                 filtered = node;
             }
             current = current->next;
         }
 
-        MyPlayer* sorted = NULL;
-        MyPlayer* p = filtered;
+        Player* sorted = NULL;
+        Player* p = filtered;
 
         while(p) {
-            MyPlayer* next = p->next;
+            Player* next = p->next;
 
             if(!sorted || p->performanceIndex > sorted->performanceIndex) {
                 p->next = sorted;
                 sorted = p;
             } else {
-                MyPlayer* temp = sorted;
+                Player* temp = sorted;
 
                 while(temp->next && temp->next->performanceIndex > p->performanceIndex) {
                     temp = temp->next;
@@ -546,15 +549,18 @@ void displayAllPlayersOfAllTeams() {
 
     printf("%s of all teams\n", role);
     printf("=======================================================================================================\n");
-    printf("%-5s %-25s %-15s %-8s %-8s %-8s %-8s %-8s %-12s\n", "ID", "Name", "Role", "Runs", "Avg", "SR", "Wkts", "ER", "Perf.Index");
+    printf("%-5s %-25s %-15s %-8s %-8s %-8s %-8s %-8s %-12s\n", 
+           "ID", "Name", "Role", "Runs", "Avg", "SR", "Wkts", "ER", "Perf.Index");
     printf("=======================================================================================================\n");
 
     while(heapSize > 0) {
         HeapNode top = heap[0];
 
-        MyPlayer* player = top.player;
+        Player* player = top.player;
 
-        printf("%-5d %-25s %-15s %-8d %-8.2f %-8.2f %-8d %-8.2f %-12.2f\n", player->id, player->name, player->role, player->totalRuns, player->battingAverage, player->strikeRate, player->wickets, player->economyRate, player->performanceIndex);
+        printf("%-5d %-25s %-15s %-8d %-8.2f %-8.2f %-8d %-8.2f %-12.2f\n", 
+               player->id, player->name, player->role, player->totalRuns, player->battingAverage, 
+               player->strikeRate, player->wickets, player->economyRate, player->performanceIndex);
 
         rolePlayers[top.teamIndex] = rolePlayers[top.teamIndex]->next;
 
@@ -574,10 +580,10 @@ void displayAllPlayersOfAllTeams() {
 
 void exitPerformanceAnalyzer() {
     for(int index = 0; index < TotalTeams; index++) {
-        MyPlayer* temp = team[index].playerHead;
+        Player* temp = team[index].playerHead;
 
         while(temp != NULL) {
-            MyPlayer* next = temp->next;
+            Player* next = temp->next;
             free(temp);
             temp = next;
         }
